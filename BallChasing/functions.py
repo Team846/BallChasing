@@ -1,4 +1,6 @@
 import numpy as np
+import cv2
+from VideoStream import VideoStream
 
 def find_mean(data):
         print(data)
@@ -22,3 +24,18 @@ def find_mean(data):
         return np.mean(new_data)
 
 #print(find_mean([25.341863098849544, 9.86958235016359, 16.264869624932143, 5.288193775215941, 5.8037774458629015, 41.66920077672735, 41.66920077672735, 16.078261466156366, 10.667279816506062]))
+
+def getzed():
+    for i in range(0, 3):
+        v = VideoStream(i)
+        if not v.available():
+            continue
+        else:
+            ZED_WIDTH = 1344
+            ZED_HEIGHT = 376
+            frame = v.read()
+            if np.shape(frame)[:2] != (ZED_HEIGHT, ZED_WIDTH):
+                continue
+            else:
+                return i
+    raise LookupError("Cannot get index of camera.")
