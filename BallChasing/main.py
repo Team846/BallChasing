@@ -11,7 +11,7 @@ import cv2
 
 app = Flask(__name__)
 
-camera = VideoStream(1).start()
+camera = VideoStream(getzed()).start()
 
 hsv_values = [6, 244, 147, 19, 255, 255]
 parameter_values = [0, 0, 0]
