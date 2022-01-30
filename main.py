@@ -17,12 +17,12 @@ angle = 0
 hsv_values = [0, 0, 0, 255, 255, 255]
 parameter_values = [0, 0, 0]
 
-table = datatransfer(ip="10.8.46.108", table_name="FunkyDashboard")
+#table = datatransfer(ip="10.8.46.108", table_name="FunkyDashboard")
 track = tracking(hsv_values, parameter_values)
 draw = drawer()
 
 def code():
-    global log, angle, depth
+    global angle, depth
 
     while find_port() == -1: pass
     camera = VideoStream(find_port()).start()
@@ -49,8 +49,8 @@ def code():
 
             imageRT = draw.circle(imageRT, posR, 5)
 
-            table.send('distance_to_ball', depth)
-            table.send('angle_to_ball', angle)
+            #table.send('distance_to_ball', depth)
+            #table.send('angle_to_ball', angle)
 
             imageRT = cv2.resize(imageRT, (int(640*0.9), int(360*0.9)))
 
