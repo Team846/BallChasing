@@ -11,8 +11,7 @@ import time
 
 app = Flask(__name__)
 
-depth = 0
-angle = 0
+depth = angle = 0
 
 hsv_values = [0, 0, 0, 255, 255, 255]
 parameter_values = [0, 0, 0]
@@ -27,8 +26,7 @@ def code():
     while find_port() == -1: pass
     camera = VideoStream(find_port()).start()
 
-    hsv_index = 0
-    parameter_index = 0
+    hsv_index = parameter_index = 0
 
     while True:
         image = camera.read()
@@ -36,28 +34,25 @@ def code():
         track.update(hsv_values, parameter_values)
 
         if camera.available():
-            height, width, channels = image.shape
+            height, width, _ = image.shape
 
             imageR = image[:, :width//2]
             imageL = image[:, width//2:]
 
-            posR, radR, imageRT = track.ball(imageR)
-            posL, radL, imageLT = track.ball(imageL)
+            posR, _, imageRT = track.ball(imageR)
+            posL, _, imageLT = track.ball(imageL)
 
             depth = find_distance(imageRT, imageLT, posR, posL)
             angle = find_angle(90, height, width, posR, posL)
-
-            imageRT = draw.circle(imageRT, posR, 5)
-
+            
             #table.send('distance_to_ball', depth)
             #table.send('angle_to_ball', angle)
 
-            imageRT = cv2.resize(imageRT, (int(640*0.9), int(360*0.9)))
+            display_image = draw.circle(imageRT, posR, 5)
+            display_image = cv2.resize(imageRT, (int(640*0.9), int(360*0.9)))
 
-            imgencode = cv2.imencode('.jpg', imageRT)[1]
-            stringData = imgencode.tostring()
             yield (b'--frame\r\n' 
-                b'Content-type: text/plain\r\n\r\n' + stringData + b'\r\n')
+                b'Content-type: text/plain\r\n\r\n' + cv2.imencode('.jpg', display_image)[1].tostring() + b'\r\n')
 
         if keyboard.is_pressed("enter"): pass
         elif keyboard.is_pressed("1"): hsv_index = 0
