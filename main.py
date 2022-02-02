@@ -91,7 +91,7 @@ def index():
             elif values[i] != None and i>=6:
                 parameter_values[i-6] = float(values[i])
         video_feed()
-    return render_template('index2.html')
+    return render_template('index.html')
 
 @app.route('/video_feed')
 def video_feed():

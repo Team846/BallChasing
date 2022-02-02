@@ -87,8 +87,6 @@
               <output>Inertia:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</output>
               <input style="width: 60%" type="range" min="0" max="1" value="0.00" class="slider" name="inertia_value" step="0.01" id="inertia_value" oninput="this.nextElementSibling.value = this.value">
               <output style="margin-left: 5px">0.35</output>
-              <p></p>
-              <center><button class="w3-button" style="height: 40px;width: 100px;border-radius: 10px; background-color:#16afc7;color: white">Save</button></center>
             </div> 
         </form>    
     </div>
@@ -137,7 +135,8 @@
 <script type="text/javascript">
     // Autosubmit functionality
     $('#value_calibration').change(() => {
-        $(document).submit();
+        $('#value_calibration').submit();
+
     });
 </script>
 <script type="text/javascript">
