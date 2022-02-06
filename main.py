@@ -1,5 +1,5 @@
 from flask import Flask, Response, render_template, request
-from datatransfer import datatransfer
+from networktables import NetworkTables
 from VideoStream import VideoStream
 from tracking import tracking
 from drawer import drawer
@@ -16,7 +16,9 @@ depth = angle = 0
 hsv_values = [0, 0, 0, 255, 255, 255]
 parameter_values = [0, 0, 0]
 
-#table = datatransfer(ip="10.8.46.108", table_name="FunkyDashboard")
+NetworkTables.initialize(server='192.168.0.10')
+table = NetworkTables.getTable('SmartDashboard')
+
 track = tracking(hsv_values, parameter_values)
 draw = drawer()
 
@@ -45,8 +47,8 @@ def code():
             depth = find_distance(imageRT, imageLT, posR, posL)
             angle = find_angle(90, height, width, posR, posL)
             
-            #table.send('distance_to_ball', depth)
-            #table.send('angle_to_ball', angle)
+            table.putNumber('distance_to_ball', depth)
+            table.putNumber('angle_to_ball', angle)
 
             display_image = draw.circle(imageRT, posR, 5)
             display_image = cv2.resize(imageRT, (int(640*0.9), int(360*0.9)))
