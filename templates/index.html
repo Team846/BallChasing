@@ -75,19 +75,8 @@
                 <input style="width: 75%" type="range" min="0" max="255" value="255" class="slider" name="hsv_value_6" id="hsv_value_6" oninput="this.nextElementSibling.value = this.value">
                 <output style="margin-left: 5px">255</output>
                 <p></p>
-              </div>
-              <output>Circularity:</output>
-              <input style="width: 60%" type="range" min="0" max="1" value="0.00" class="slider" name="circularity_value" step="0.01" id="circularity_value" oninput="this.nextElementSibling.value = this.value">
-              <output style="margin-left: 5px">0.30</output>
-              <p></p>
-              <output>Convexity:</output>
-              <input style="width: 60%" type="range" min="0" max="1" value="0.00" class="slider" name="convexity_value" step="0.01" id="convexity_value" oninput="this.nextElementSibling.value = this.value">
-              <output style="margin-left: 5px">0.15</output>
-              <p></p>
-              <output>Inertia:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</output>
-              <input style="width: 60%" type="range" min="0" max="1" value="0.00" class="slider" name="inertia_value" step="0.01" id="inertia_value" oninput="this.nextElementSibling.value = this.value">
-              <output style="margin-left: 5px">0.35</output>
-            </div> 
+              </div> 
+            </div>
         </form>    
     </div>
     <div class="w3-half">
@@ -115,10 +104,6 @@
               <tr>
                 <td style="text-align: left">HSV Values</td>
                 <td style="text-align: right" id="hsv"><i>[0, 0, 0, 255, 255, 255]</i></td>
-              </tr>
-              <tr>
-                <td style="text-align: left">PARAM Values</td>
-                <td style="text-align: right" id="param"><i>[0.00, 0.00, 0.00]</i></td>
               </tr>
             </table>
             <p></p>
@@ -238,54 +223,6 @@
         })
     });
 </script> 
-<script type="text/javascript">
-    $(document).on('submit','#value_calibration',function(e)
-        {
-            e.preventDefault();
-            $.ajax({
-                type:'POST',
-                url:'/',
-                data:{
-                circularity_value:$("#circularity_value").val()
-            },
-                success:function()
-            {
-            }
-        })
-    });
-</script>
-<script type="text/javascript">
-    $(document).on('submit','#value_calibration',function(e)
-        {
-            e.preventDefault();
-            $.ajax({
-                type:'POST',
-                url:'/',
-                data:{
-                convexity_value:$("#convexity_value").val()
-            },
-                success:function()
-            {
-            }
-        })
-    });
-</script>
-<script type="text/javascript">
-    $(document).on('submit','#value_calibration',function(e)
-        {
-            e.preventDefault();
-            $.ajax({
-                type:'POST',
-                url:'/',
-                data:{
-                inertia_value:$("#inertia_value").val()
-            },
-                success:function()
-            {
-            }
-        })
-    });
-</script>
 <script>
   (function update_depth() {
     $.get('/current_depth', function(current_depth) {
@@ -307,14 +244,6 @@
     $.get('/current_hsv', function(current_hsv) {
       $('#hsv').html(current_hsv);
       setTimeout(update_hsv, 100);
-    });
-})();
-</script>
-<script>
-  (function update_param() {
-    $.get('/current_param', function(current_param) {
-      $('#param').html(current_param);
-      setTimeout(update_param, 100);
     });
 })();
 </script>

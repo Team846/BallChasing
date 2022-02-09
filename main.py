@@ -6,34 +6,34 @@ from drawer import drawer
 from calculations import *
 from functions import *
 import keyboard
-import cv2
 import time
+import math
+import cv2
 
 app = Flask(__name__)
 
 depth = angle = 0
 
-hsv_values = [0, 0, 0, 255, 255, 255]
-parameter_values = [0, 0, 0]
+hsv_values = [0, 157, 42, 255, 255, 255]#[57, 181, 22, 146, 306, 120]
 
 #NetworkTables.initialize(server='192.168.0.10')
 #table = NetworkTables.getTable('SmartDashboard')
 
-track = tracking(hsv_values, parameter_values)
+track = tracking(hsv_values)
 draw = drawer()
 
 def code():
     global angle, depth
 
-    while find_port() == -1: pass
+    #while find_port() == -1: pass
     camera = VideoStream(find_port()).start()
 
-    hsv_index = parameter_index = 0
+    hsv_index = 0
 
     while True:
         image = camera.read()
 
-        track.update(hsv_values, parameter_values)
+        track.update(hsv_values)
 
         if camera.available():
             height, width, _ = image.shape
@@ -41,57 +41,45 @@ def code():
             imageR = image[:, :width//2]
             imageL = image[:, width//2:]
 
-            posR, _, imageRT = track.ball(imageR)
-            posL, _, imageLT = track.ball(imageL)
+            posR, r, imageRT = track.ball(imageR)
+            posL, r, imageLT = track.ball(imageL)
 
             depth = find_distance(imageRT, imageLT, posR, posL)
-            angle = find_angle(90, height, width, posR, posL)
-            
+            angle = find_angle(90, height, width/2, posR, posL)
+
+            true_x = depth*math.sin(angle * math.pi/180)
+            true_y = depth*math.cos(angle * math.pi/180)
+
             #table.putNumber('distance_to_ball', depth)
             #table.putNumber('angle_to_ball', angle)
 
-            display_image = draw.circle(imageRT, posR, 5)
-            display_image = cv2.resize(imageRT, (int(640*0.9), int(360*0.9)))
-
+            #display_image = draw.circle(cv2.bitwise_and(imageR, imageR, mask= imageRT), posR, 10)
+            display_image = draw.circle(imageRT, posR, 10)
+            display_image = cv2.resize(display_image, (int(1344/4), int(376/2)))
             yield (b'--frame\r\n' 
                 b'Content-type: text/plain\r\n\r\n' + cv2.imencode('.jpg', display_image)[1].tostring() + b'\r\n')
 
-        if keyboard.is_pressed("enter"): pass
+        if keyboard.is_pressed("enter"): camera.stop()
         elif keyboard.is_pressed("1"): hsv_index = 0
         elif keyboard.is_pressed("2"): hsv_index = 1
         elif keyboard.is_pressed("3"): hsv_index = 2
         elif keyboard.is_pressed("4"): hsv_index = 3
         elif keyboard.is_pressed("5"): hsv_index = 4
         elif keyboard.is_pressed("6"): hsv_index = 5
-        elif keyboard.is_pressed("7"): parameter_index = 0
-        elif keyboard.is_pressed("8"): parameter_index = 1
-        elif keyboard.is_pressed("9"): parameter_index = 2
         elif keyboard.is_pressed("up arrow"): 
             hsv_values[hsv_index] = hsv_values[hsv_index] + 1
-            track.update(hsv_values, parameter_values)
+            track.update(hsv_values)
         elif keyboard.is_pressed("down arrow"):
             hsv_values[hsv_index] = hsv_values[hsv_index] - 1
-            track.update(hsv_values, parameter_values)
-        elif keyboard.is_pressed("w"):
-            parameter_values[parameter_index] = parameter_values[parameter_index] + 0.05
-            if parameter_values[parameter_index] > 1:
-                parameter_values[parameter_index] = 1
-            track.update(hsv_values, parameter_values)
-        elif keyboard.is_pressed("s"):
-            parameter_values[parameter_index] = parameter_values[parameter_index] - 0.05
-            if parameter_values[parameter_index] < 0:
-                parameter_values[parameter_index] = 0
-            track.update(hsv_values, parameter_values)
+            track.update(hsv_values)
 
 @app.route('/', methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        values = [request.form.get("hsv_value_1"), request.form.get("hsv_value_2"), request.form.get("hsv_value_3"), request.form.get("hsv_value_4"), request.form.get("hsv_value_5"), request.form.get("hsv_value_6"), request.form.get("circularity_value"), request.form.get("convexity_value"), request.form.get("intertia_value")]
+        values = [request.form.get("hsv_value_1"), request.form.get("hsv_value_2"), request.form.get("hsv_value_3"), request.form.get("hsv_value_4"), request.form.get("hsv_value_5"), request.form.get("hsv_value_6")]
         for i in range(len(values)):
-            if values[i] != None and i<6:
+            if values[i] != None:
                 hsv_values[i] = int(values[i])
-            elif values[i] != None and i>=6:
-                parameter_values[i-6] = float(values[i])
         video_feed()
     return render_template('index.html')
 
@@ -110,10 +98,6 @@ def current_angle():
 @app.route('/current_hsv')
 def current_hsv(): 
     return str(hsv_values)
-
-@app.route('/current_param')
-def current_param(): 
-    return str(parameter_values)
 
 if __name__ == '__main__':
    app.run('0.0.0.0', debug = True, port = 5802)

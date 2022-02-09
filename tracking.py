@@ -2,24 +2,10 @@ import numpy as np
 import cv2
 
 class tracking:
-        def __init__(self, values, parameters):
+        def __init__(self, values):
                 self.colorL = np.array([values[0], values[1], values[2]])
                 self.colorU = np.array([values[3], values[4], values[5]])
 
-                self.params = cv2.SimpleBlobDetector_Params()
-                self.params.minThreshold = 0;
-                self.params.maxThreshold = 100;
-                self.params.filterByArea = True
-                self.params.minArea = 20
-                self.params.maxArea = 10000000
-                self.params.filterByCircularity = True
-                self.params.minCircularity = parameters[0]
-                self.params.filterByConvexity = True
-                self.params.minConvexity = parameters[1]
-                self.params.filterByInertia = True
-                self.params.minInertiaRatio = parameters[2]
-
-                self.detector = cv2.SimpleBlobDetector_create(self.params)
         def ball(self, image):
                 cx = 0
                 cy = 0
@@ -29,22 +15,15 @@ class tracking:
                 imageT = cv2.inRange(imageT, self.colorL, self.colorU)
                 imageT = cv2.erode(imageT, None, iterations=2)
                 imageT = cv2.dilate(imageT, None, iterations=2)
-                reverse_imageT = 255 - imageT
+                cnts = cv2.findContours(imageT.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
 
-                keypoints = self.detector.detect(reverse_imageT)
-                if len(keypoints) != 0: 
-                        cx = keypoints[0].pt[0]
-                        cy = keypoints[0].pt[1]
-                        r =  keypoints[0].size / 2
+                if len(cnts) > 0:
+                        c = max(cnts, key=cv2.contourArea)
+                        ((cx, cy), r) = cv2.minEnclosingCircle(c)
 
                 return (cx, cy), r, imageT
 
-        def update(self, values, parameters):
+        def update(self, values):
                 self.colorL = np.array([values[0], values[1], values[2]])
                 self.colorU = np.array([values[3], values[4], values[5]])
-                
-                self.params.minCircularity = parameters[0]
-                self.params.minConvexity = parameters[1]
-                self.params.minInertiaRatio = parameters[2]
-                self.detector = cv2.SimpleBlobDetector_create(self.params)
 
