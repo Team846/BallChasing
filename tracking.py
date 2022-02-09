@@ -15,6 +15,7 @@ class tracking:
                 imageT = cv2.inRange(imageT, self.colorL, self.colorU)
                 imageT = cv2.erode(imageT, None, iterations=2)
                 imageT = cv2.dilate(imageT, None, iterations=2)
+                imageT = cv2.bilateralFilter(imageT, 5, 175, 175)
                 cnts = cv2.findContours(imageT.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
 
                 if len(cnts) > 0:
