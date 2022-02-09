@@ -28,3 +28,4 @@ def find_angle(fov, height, width, position_right, position_left):
         xl, yl = position_left
 
         return fov/width*((xr+xl)/2-height)
+
