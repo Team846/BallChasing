@@ -41,11 +41,11 @@ def code():
             imageR = image[:, :width//2]
             imageL = image[:, width//2:]
 
-            posR, _, imageRT = track.ball(imageR)
-            posL, _, imageLT = track.ball(imageL)
+            posR, rR, imageRT = track.ball(imageR)
+            posL, rL, imageLT = track.ball(imageL)
 
-            depth = find_distance(imageRT, imageLT, posR, posL)
-            angle = find_angle(90, height, width/2, posR, posL)
+            #depth = find_distance(imageRT, imageLT, posR, posL)
+            #angle = find_angle(90, height, width/2, posR, posL)
 
             #true_x = depth*math.sin(angle * math.pi/180)
             #true_y = depth*math.cos(angle * math.pi/180)
@@ -53,12 +53,17 @@ def code():
             #table.putNumber('distance_to_ball', depth)
             #table.putNumber('angle_to_ball', angle)
             
-            #display_image = imageR #color
-            display_image = imageRT #mask
+            display_image = imageR #color
+            #display_image = imageRT #mask
             #display_image = cv2.bitwise_and(imageR, imageR, mask= imageRT) #mask + color
 
             display_image = draw.dot(display_image, posR, 5)
             #display_image = cv2.resize(display_image, (int(1344/2), int(376)))
+
+            if posR != (0,0) and rR!= 0: 
+                display_image = track.crop(display_image, posR, rR)
+                is_ball = track.find_circle(display_image, rR)
+                if is_ball == False: display_image = imageR
 
             yield (b'--frame\r\n' 
                 b'Content-type: text/plain\r\n\r\n' + cv2.imencode('.jpg', display_image)[1].tostring() + b'\r\n')

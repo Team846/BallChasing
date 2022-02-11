@@ -28,3 +28,39 @@ class tracking:
                 self.colorL = np.array([values[0], values[1], values[2]])
                 self.colorU = np.array([values[3], values[4], values[5]])
 
+        def crop(self, image, pos, r):
+                height, width, _ = image.shape
+                scalar = 25
+
+                x1 = int(pos[0] - r - scalar)
+                x2 = int(pos[0] + r + scalar)
+                y1 = int(pos[1] - r - scalar)
+                y2 = int(pos[1] + r + scalar)
+
+                if x1 < 0: x1 = 0
+                if x2 > width: x2 = width
+                if y1 < 0: y1 = 0
+                if y2 > height: y2 = height
+
+                imageT = image[y1: y2,x1: x2]
+
+                return imageT
+
+        def find_circle(self, image, r):
+                height, width, _ = image.shape
+                scalar = 25
+
+                circles_found = False
+
+                lower_r = int(r - scalar)
+                upper_r = int(r + scalar)
+                if lower_r <= 0: lower_r = 0
+
+                imageT = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                imageT = cv2.medianBlur(imageT, 5)
+
+                circles = cv2.HoughCircles(imageT, cv2.HOUGH_GRADIENT, 1, height / 8, param1=100, param2=30, minRadius=lower_r, maxRadius=upper_r)
+                if circles is not None: circles_found = True
+                
+                return circles_found
+
