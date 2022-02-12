@@ -5,9 +5,6 @@ from tracking import tracking
 from drawer import drawer
 from calculations import *
 from functions import *
-import keyboard
-import time
-import math
 import cv2
 
 app = Flask(__name__)
@@ -41,46 +38,29 @@ def code():
             imageR = image[:, :width//2]
             imageL = image[:, width//2:]
 
+            imageR = cv2.flip(imageR, 0)
+            imageL = cv2.flip(imageL, 0)
+
             posR, rR, imageRT = track.ball(imageR)
             posL, rL, imageLT = track.ball(imageL)
 
-            #depth = find_distance(imageRT, imageLT, posR, posL)
-            #angle = find_angle(90, height, width/2, posR, posL)
-
-            #true_x = depth*math.sin(angle * math.pi/180)
-            #true_y = depth*math.cos(angle * math.pi/180)
+            depth = find_distance(imageRT, imageLT, posR, posL)
+            angle = -find_angle(90, height, width/2, posR, posL)
 
             #table.putNumber('distance_to_ball', depth)
             #table.putNumber('angle_to_ball', angle)
             
-            display_image = imageR #color
-            #display_image = imageRT #mask
-            #display_image = cv2.bitwise_and(imageR, imageR, mask= imageRT) #mask + color
-
-            display_image = draw.dot(display_image, posR, 5)
-            #display_image = cv2.resize(display_image, (int(1344/2), int(376)))
+            display_image = imageRT
 
             if posR != (0,0) and rR!= 0: 
-                display_image = track.crop(display_image, posR, rR)
-                is_ball = track.find_circle(display_image, rR)
-                if is_ball == False: display_image = imageR
+                is_ball = track.find_circle(track.crop(imageR, posR, rR), rR, 50,30)
+                if is_ball == True: display_image = draw.dot(display_image, posR, 5)
+                else: depth = angle = 0
+
+            display_image = cv2.resize(display_image, (int(1344/4), int(376/2)))
 
             yield (b'--frame\r\n' 
                 b'Content-type: text/plain\r\n\r\n' + cv2.imencode('.jpg', display_image)[1].tostring() + b'\r\n')
-
-        if keyboard.is_pressed("enter"): camera.stop()
-        elif keyboard.is_pressed("1"): hsv_index = 0
-        elif keyboard.is_pressed("2"): hsv_index = 1
-        elif keyboard.is_pressed("3"): hsv_index = 2
-        elif keyboard.is_pressed("4"): hsv_index = 3
-        elif keyboard.is_pressed("5"): hsv_index = 4
-        elif keyboard.is_pressed("6"): hsv_index = 5
-        elif keyboard.is_pressed("up arrow"): 
-            hsv_values[hsv_index] = hsv_values[hsv_index] + 1
-            track.update(hsv_values)
-        elif keyboard.is_pressed("down arrow"):
-            hsv_values[hsv_index] = hsv_values[hsv_index] - 1
-            track.update(hsv_values)
 
 @app.route('/', methods=["GET", "POST"])
 def index():

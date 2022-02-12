@@ -13,8 +13,8 @@ class tracking:
 
                 imageT = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
                 imageT = cv2.inRange(imageT, self.colorL, self.colorU)
-                imageT = cv2.erode(imageT, None, iterations=2)
-                imageT = cv2.dilate(imageT, None, iterations=2)
+                imageT = cv2.erode(imageT, None, iterations=1)
+                imageT = cv2.dilate(imageT, None, iterations=1)
                 imageT = cv2.bilateralFilter(imageT, 5, 175, 175)
                 cnts = cv2.findContours(imageT.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
 
@@ -46,11 +46,11 @@ class tracking:
 
                 return imageT
 
-        def find_circle(self, image, r):
+        def find_circle(self, image, r, p1, p2):
                 height, width, _ = image.shape
-                scalar = 25
+                if height == 0 or width == 0: return False
 
-                circles_found = False
+                scalar = 25
 
                 lower_r = int(r - scalar)
                 upper_r = int(r + scalar)
@@ -59,8 +59,7 @@ class tracking:
                 imageT = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 imageT = cv2.medianBlur(imageT, 5)
 
-                circles = cv2.HoughCircles(imageT, cv2.HOUGH_GRADIENT, 1, height / 8, param1=100, param2=30, minRadius=lower_r, maxRadius=upper_r)
-                if circles is not None: circles_found = True
-                
-                return circles_found
+                circles = cv2.HoughCircles(imageT, cv2.HOUGH_GRADIENT, 1, height / 1, param1=p1, param2=p2, minRadius=lower_r, maxRadius=upper_r)
+                if circles is not None: return True
+                else: return False
 
