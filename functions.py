@@ -8,7 +8,7 @@ def find_port():
         if camera.available():
             height, width, _ = camera.read().shape
             print(height, width)
-            if height == 720:
+            if height == 376:
                 print(i)
                 return i
         camera.stop()

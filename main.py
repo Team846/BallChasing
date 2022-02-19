@@ -1,3 +1,4 @@
+import numpy as np
 from flask import Flask, Response, render_template, request
 #from networktables import NetworkTables
 from VideoStream import VideoStream
@@ -57,10 +58,21 @@ def code():
                 if is_ball == True: display_image = draw.dot(display_image, posR, 5)
                 else: depth = angle = 0
 
-            display_image = cv2.resize(display_image, (int(1344/4), int(376/2)))
+            lowerColor = np.full((50, 50, 3), (hsv_values[0], hsv_values[1], hsv_values[2]), dtype=np.float32)
+            lowerColor = cv2.cvtColor(lowerColor, cv2.COLOR_HSV2BGR)
+            upperColor = np.full((50, 50, 3), (hsv_values[3], hsv_values[4], hsv_values[5]), dtype=np.float32)
+            upperColor = cv2.cvtColor(upperColor, cv2.COLOR_HSV2BGR)
+            disp_img = np.full((376, 672, 3), (0, 0, 0))
+            for i in range(len(display_image)):
+                for j in range(len(display_image[i])):
+                    disp_img[i][j][:] = display_image[i][j]
+            disp_img[0:lowerColor.shape[0], 0:lowerColor.shape[1]] = lowerColor
+            disp_img[0:upperColor.shape[0], 50:50+upperColor.shape[1]] = upperColor
+
+            #disp_img = cv2.resize(disp_img, (int(1344/4), int(376/2)))
 
             yield (b'--frame\r\n' 
-                b'Content-type: text/plain\r\n\r\n' + cv2.imencode('.jpg', display_image)[1].tostring() + b'\r\n')
+                b'Content-type: text/plain\r\n\r\n' + cv2.imencode('.jpg', disp_img)[1].tostring() + b'\r\n')
 
 @app.route('/', methods=["GET", "POST"])
 def index():
