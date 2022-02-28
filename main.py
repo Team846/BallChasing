@@ -1,25 +1,32 @@
-from flask import Flask, Response, render_template, request
-#from networktables import NetworkTables
 from VideoStream import VideoStream
 from tracking import tracking
 from drawer import drawer
 from calculations import *
 from functions import *
 import cv2
-
-app = Flask(__name__)
+import socket
 
 depth = angle = 0
 
 hsv_values = [0, 0, 0, 255, 255, 255]
 
-#NetworkTables.initialize(server='192.168.0.10')
-#table = NetworkTables.getTable('SmartDashboard')
-
 track = tracking(hsv_values)
 draw = drawer()
 
-def code():
+localIP = ""
+localPort = 8468
+bufferSize = 4096
+roboRIOIP = "10.8.46.2"
+
+UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+
+# Bind to address and ip
+
+UDPServerSocket.bind((localIP, localPort))
+print(f"UDP server running on port {localPort}")
+
+
+def main():
     global angle, depth
 
     #while find_port() == -1: pass
@@ -46,9 +53,6 @@ def code():
 
             depth = find_distance(imageRT, imageLT, posR, posL)
             angle = -find_angle(90, height, width/2, posR, posL)
-
-            #table.putNumber('distance_to_ball', depth)
-            #table.putNumber('angle_to_ball', angle)
             
             display_image = imageRT
 
@@ -59,37 +63,6 @@ def code():
 
             display_image = cv2.resize(display_image, (int(1344/4), int(376/2)))
 
-            yield (b'--frame\r\n' 
-                b'Content-type: text/plain\r\n\r\n' + cv2.imencode('.jpg', display_image)[1].tostring() + b'\r\n')
+            data = str("("+depth+","+angle+")").encode("utf-8")
 
-@app.route('/', methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        values = [request.form.get("hsv_value_1"), request.form.get("hsv_value_2"), request.form.get("hsv_value_3"), request.form.get("hsv_value_4"), request.form.get("hsv_value_5"), request.form.get("hsv_value_6")]
-        for i in range(len(values)):
-            if values[i] != None:
-                hsv_values[i] = int(values[i])
-        video_feed()
-    return render_template('index.html')
-
-@app.route('/video_feed')
-def video_feed():
-   return Response(code(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/current_depth')
-def current_depth(): 
-    return str(int(depth)) + " inches"
-
-@app.route('/current_angle')
-def current_angle(): 
-    return str(int(angle)) + " degrees"
-
-@app.route('/current_hsv')
-def current_hsv(): 
-    return str(hsv_values)
-
-if __name__ == '__main__':
-   app.run('0.0.0.0', debug = True, port = 5802)
-
-
-
+            UDPServerSocket.sendto(data, roboRIOIP)
