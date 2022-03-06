@@ -1,5 +1,7 @@
+from email.mime import image
 import numpy as np
 import cv2
+import math
 
 class tracking:
         def __init__(self, values):
@@ -62,4 +64,37 @@ class tracking:
                 circles = cv2.HoughCircles(imageT, cv2.HOUGH_GRADIENT, 1, height / 1, param1=p1, param2=p2, minRadius=lower_r, maxRadius=upper_r)
                 if circles is not None: return True
                 else: return False
+        def ball_tracking(self, image1, image2, hsv_filter):
 
+                height, width, channel = image1.shape
+
+                try:
+                        assert image1.shape == image2.shape and (height is not 0 or width is not 0)
+                except:
+                        return
+
+                image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2HSV)
+                image1 = cv2.inRange(image1, self.colorL, self.colorU)
+
+                image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2HSV)
+                image2 = cv2.inRange(image2, self.colorL, self.colorU)
+
+                circles1 = cv2.HoughCircles(image1, cv2.HOUGH_GRADIENT, 1, height, param1=0, param2=0, minRadius=10, maxRadius=height)
+                circles2 = cv2.HoughCircles(image2, cv2.HOUGH_GRADIENT, 1, height, param1=0, param2=0, minRadius=10, maxRadius=height)
+
+                baseline = 9
+                f_pixel = 6
+                mounting_angle = 56.6
+                
+                f_pixel = (width * 0.5) / np.tan(alpha * 0.5 * np.pi/180)
+
+                x_right = position_right[0]
+                x_left = position_left[0]
+
+                disparity = x_left-x_right 
+                zDepth = (baseline*f_pixel)/disparity
+
+                distance = abs(zDepth)*0.303881-0.43233
+                if math.isinf(distance): distance = 0
+
+                return distance
