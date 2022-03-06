@@ -1,5 +1,4 @@
 from email.mime import image
-import this
 import numpy as np
 import cv2
 import math
@@ -49,7 +48,7 @@ class tracking:
                 real_dist = self.stereo_lens_dist * self.focal_length / (math.abs(x2 - x1))
                 return real_dist
 
-        def match(circles1, circles2, img_height, img_width):
+        def match(self, circles1, circles2, img_height, img_width):
                 matches = []
                 min_real_dist = 99999
                 for circle1 in circles1[0, :]:
@@ -64,8 +63,8 @@ class tracking:
                                         pass
                                 if (math.abs(r1 - r2) > radius_disparity_tune):
                                         pass
-                                approx_dist = this.approx_dist(this, x1, y1, x2, y2, img_height, img_width)
-                                real_dist = this.real_dist(this, x1, x2)
+                                approx_dist = self.approx_dist(self, x1, y1, x2, y2, img_height, img_width)
+                                real_dist = self.real_dist(self, x1, x2)
                                 if ( math.abs(approx_dist - real_dist) > dist_diff_tune):
                                         pass
                                 if(real_dist < min_real_dist):
@@ -74,8 +73,8 @@ class tracking:
                 x2, y2 = matches[1]
                 real_dist = matches[2]
 
-                horizontal_angle = ((x1+x2)/2 - this.res_x/2) / this.res_x * this.fov_x
-                vertical_angle = (y1 - this.res_y/2)/this.res_y * this.fov_y + this.mounting_angle
+                horizontal_angle = ((x1+x2)/2 - self.res_x/2) / self.res_x * self.fov_x
+                vertical_angle = (y1 - self.res_y/2)/self.res_y * self.fov_y + self.mounting_angle
 
                 x = real_dist * math.sin(horizontal_angle) * math.cos(vertical_angle)
                 y = real_dist * math.sin(horizontal_angle) * math.sin(vertical_angle)
