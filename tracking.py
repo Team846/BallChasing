@@ -35,7 +35,7 @@ class tracking:
                 circles1 = cv2.HoughCircles(image1, cv2.HOUGH_GRADIENT, 1, height, param1=0, param2=0, minRadius=10, maxRadius=height)
                 circles2 = cv2.HoughCircles(image2, cv2.HOUGH_GRADIENT, 1, height, param1=0, param2=0, minRadius=10, maxRadius=height)
 
-                return this.match(circles1, circles2, height, width)
+                return self.match(circles1, circles2, height, width)
 
         def approx_dist(self, x1, y1, x2, y2, img_height, img_width):
                 horizontal_angle = x1 / (img_width) * self.fov_x
