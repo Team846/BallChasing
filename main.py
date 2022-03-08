@@ -5,10 +5,11 @@ from calculations import *
 from functions import *
 import cv2
 import socket
+import sys
 
 depth = angle = 0
 
-hsv_values = [0, 0, 0, 255, 255, 255]
+hsv_values = [100, 100, 20, 255, 255, 255]
 
 track = tracking(hsv_values)
 draw = drawer()
@@ -29,40 +30,24 @@ print(f"UDP server running on port {localPort}")
 def main():
     global angle, depth
 
-    #while find_port() == -1: pass
+    while find_port() == -1: pass
     camera = VideoStream(find_port()).start()
 
-    hsv_index = 0
+    # vidcap = cv2.VideoCapture('zed1.mov')
+    i = 0
+    output = cv2.VideoWriter('vid.avi', cv2.VideoWriter_fourcc(*'MJPG'), 60, (640, 360), 0)
 
     while True:
-        image = camera.read()
+        # success, img = vidcap.read()
+        # print(img.shape)
+        img = camera.read()
 
-        track.update(hsv_values)
-
+        # output.write(img1)
+        # i+=1
+        print("flsdkjf")
+        print()
         if camera.available():
-            height, width, _ = image.shape
+            img1, img2, matches, x, y = track.ball_tracking(img[0:360, 0:640], img[0:360, 640:], i)
+            UDPServerSocket.sendto(bytearray([int(x), int(y)]), roboRIOIP)
 
-            imageR = image[:, :width//2]
-            imageL = image[:, width//2:]
-
-            imageR = cv2.flip(imageR, 0)
-            imageL = cv2.flip(imageL, 0)
-
-            posR, rR, imageRT = track.ball(imageR)
-            posL, rL, imageLT = track.ball(imageL)
-
-            depth = find_distance(imageRT, imageLT, posR, posL)
-            angle = -find_angle(90, height, width/2, posR, posL)
-            
-            display_image = imageRT
-
-            if posR != (0,0) and rR!= 0: 
-                is_ball = track.find_circle(track.crop(imageR, posR, rR), rR, 50,30)
-                if is_ball == True: display_image = draw.dot(display_image, posR, 5)
-                else: depth = angle = 0
-
-            display_image = cv2.resize(display_image, (int(1344/4), int(376/2)))
-
-            data = str("("+depth+","+angle+")").encode("utf-8")
-
-            UDPServerSocket.sendto(data, roboRIOIP)
+main()
