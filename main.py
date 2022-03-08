@@ -16,8 +16,10 @@ draw = drawer()
 
 localIP = ""
 localPort = 8468
-bufferSize = 4096
+bufferSize = 64
+
 roboRIOIP = "10.8.46.2"
+roboRIOPort = 9719
 
 UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
@@ -48,5 +50,5 @@ def main():
         print()
         if camera.available():
             img1, img2, matches, x, y = track.ball_tracking(img[0:360, 0:640], img[0:360, 640:], i)
-            UDPServerSocket.sendto(bytes(str(int(x).to_bytes())+str(int(y).to_bytes), 'utf-8'), roboRIOIP)
+            UDPServerSocket.sendto(bytes(str(int(x).to_bytes())+str(int(y).to_bytes), 'utf-8'), (roboRIOIP, roboRIOPort))
 main()
