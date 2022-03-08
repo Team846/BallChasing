@@ -48,6 +48,6 @@ def main():
         print()
         if camera.available():
             img1, img2, matches, x, y = track.ball_tracking(img[0:360, 0:640], img[0:360, 640:], i)
-            UDPServerSocket.sendto(bytearray([int(x), int(y)]), roboRIOIP)
+            UDPServerSocket.sendto(str.encode(str(int(x).to_bytes())+str(int(y).to_bytes), 'utf-8'), roboRIOIP)
 
 main()
