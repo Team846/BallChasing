@@ -30,22 +30,34 @@ class tracking:
                 cv2.imwrite("m.jpg", image1)
 
                 image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2HSV)
-                
                 image1 = cv2.inRange(image1, self.colorL, self.colorU)
-                image1 = cv2.medianBlur(image1, 5)
+                image1 = cv2.blur(image1, (5, 5))
+                image1 = cv2.inRange(image1, 255/(25/3), 255)
+                # image1 = cv2.GaussianBlur(image1, (7,7), 0)
+                # image1 = cv2.erode(image1, (6, 6))
+                # image1 = cv2.dilate(image1, (6, 6))
 
                 cv2.imwrite("l.jpg", image1)
                 image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2HSV)
                 image2 = cv2.inRange(image2, self.colorL, self.colorU)
-                image2 = cv2.medianBlur(image2, 5)
+                image2 = cv2.blur(image1, (5, 5))
+                image2 = cv2.inRange(image1, 255/(25/3), 255)
+                # image1 = cv2.GaussianBlur(image1, (7,7), 0)
+                # image1 = cv2.erode(image1, (6, 6))
+                # canny = cv2.dilate(image1, (6, 6))
+                canny = cv2.Canny(image2, 100, 200)
 
-                circles1 = cv2.HoughCircles(image1, cv2.HOUGH_GRADIENT, 1, height, param1=9, param2=8, minRadius=27, maxRadius=46)
-                circles2 = cv2.HoughCircles(image2, cv2.HOUGH_GRADIENT, 1, height, param1=9, param2=8, minRadius=27, maxRadius=46)
 
-                matches, x, y = self.match(circles1, circles2, height, width)
+                circles1 = cv2.HoughCircles(image1, cv2.HOUGH_GRADIENT, 2, 40, param1=200, param2=30, minRadius=15, maxRadius=40)
+                circles2 = cv2.HoughCircles(image2, cv2.HOUGH_GRADIENT, 2, 40, param1=200, param2=30, minRadius=15, maxRadius=40)
 
+                matches, x, y, all_circles = self.match(circles1, circles2, height, width)
 
-                return image1, cv2.circle(image1, (int(matches[0][0]), int(matches[0][1])), int(matches[0][2]), [100, 100, 100], 10), matches, x, y
+                img2 = image1
+                for match in all_circles:
+                        img2 = cv2.circle(img2, (int(match[0][0]), int(match[0][1])), int(match[0][2]), [100, 100, 100], 10) 
+
+                return image1, img2, matches, x, y, canny
 
         def approx_dist(self, x1, y1, x2, y2, img_height, img_width):
                 horizontal_angle = x1 / (img_width) * self.fov_x
@@ -59,35 +71,40 @@ class tracking:
                 return real_dist
 
         def match(self, circles1, circles2, img_height, img_width):
-                matches = []
-                min_real_dist = 99999
-                for circle1 in circles1[0, :]:
-                        x1, y1, r1 = circle1[0], circle1[1], circle1[2]
-                        for circle2 in circles2[0, :]:
-                                x2, y2, r2 = circle2[0], circle2[1], circle2[2]
-                                
-                                y_offset_tune = 100
-                                radius_disparity_tune = 100
-                                dist_diff_tune = 100
-                                if (abs(y1 - y2) > y_offset_tune):
-                                        pass
-                                if (abs(r1 - r2) > radius_disparity_tune):
-                                        pass
-                                approx_dist = self.approx_dist(x1, y1, x2, y2, img_height, img_width)
-                                real_dist = self.real_dist(x1, x2)
-                                if ( abs(approx_dist - real_dist) > dist_diff_tune):
-                                        pass
-                                if(real_dist < min_real_dist):
-                                        matches = [(x1, y1, r1), (x2, y2, r2), real_dist]
-                print(matches)
-                x1, y1, r1 = matches[0]
-                x2, y2, r2 = matches[1]
-                real_dist = matches[2]
+                try:
+                        matches = []
+                        all_circles = []
+                        min_real_dist = 99999
+                        for circle1 in circles1[0, :]:
+                                x1, y1, r1 = circle1[0], circle1[1], circle1[2]
+                                for circle2 in circles2[0, :]:
+                                        x2, y2, r2 = circle2[0], circle2[1], circle2[2]
+                                        
+                                        y_offset_tune = 100
+                                        radius_disparity_tune = 100
+                                        dist_diff_tune = 100
+                                        if (abs(y1 - y2) > y_offset_tune):
+                                                pass
+                                        if (abs(r1 - r2) > radius_disparity_tune):
+                                                pass
+                                        approx_dist = self.approx_dist(x1, y1, x2, y2, img_height, img_width)
+                                        real_dist = self.real_dist(x1, x2)
+                                        if ( abs(approx_dist - real_dist) > dist_diff_tune):
+                                                pass
+                                        all_circles.append([(x1, y1, r1), (x2, y2, r2), real_dist])
+                                        if(real_dist < min_real_dist):
+                                                matches = [(x1, y1, r1), (x2, y2, r2), real_dist]
+                        # print(matches)
+                        x1, y1, r1 = matches[0]
+                        x2, y2, r2 = matches[1]
+                        real_dist = matches[2]
 
-                horizontal_angle = ((x1+x2)/2 - self.res_x/2) / self.res_x * self.fov_x
-                vertical_angle = (y1 - self.res_y/2)/self.res_y * self.fov_y + self.mounting_angle
+                        horizontal_angle = ((x1+x2)/2 - self.res_x/2) / self.res_x * self.fov_x
+                        vertical_angle = (y1 - self.res_y/2)/self.res_y * self.fov_y + self.mounting_angle
 
-                x = real_dist * math.sin(horizontal_angle) * math.cos(vertical_angle)
-                y = real_dist * math.sin(horizontal_angle) * math.sin(vertical_angle)
+                        x = real_dist * math.sin(horizontal_angle) * math.cos(vertical_angle)
+                        y = real_dist * math.sin(horizontal_angle) * math.sin(vertical_angle)
 
-                return matches, x, y
+                        return matches, x, y, all_circles
+                except:
+                        return
