@@ -119,6 +119,8 @@ def main():
 
         # print("flsdkjf")
         if camera.available():
-            img1, img2, matches, x, y = track.ball_tracking(img[0:360, 0:640], img[0:360, 640:], i)
-            UDPServerSocket.sendto(bytes([x, y]), (roboRIOIP, roboRIOPort))
+            # img1, img2, matches, x, y = track.ball_tracking(img[0:360, 0:640], img[0:360, 640:], i)
+            x = x.to_bytes(4, byteorder='big')
+            y = y.to_bytes(4, byteorder='big')
+            UDPServerSocket.sendto((x + y)), (roboRIOIP, roboRIOPort))
 main()
