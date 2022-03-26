@@ -7,12 +7,12 @@ class tracking:
         def __init__(self, values):
                 self.colorL = np.array([values[0], values[1], values[2]])
                 self.colorU = np.array([values[3], values[4], values[5]])
-                self.fov_x = 0
-                self.fov_y = 0
+                self.fov_x = 85 * math.pi / 180 #rad
+                self.fov_y = 54 *math.pi / 180#deg
                 self.zed_mounting_height = 0
-                self.ball_radius = 0 
-                self.stereo_lens_dist = 0 
-                self.focal_length_px = 0
+                self.ball_radius = 4.75 #inch
+                self.stereo_lens_dist = 4.7 #inch 
+                self.focal_length_px = 700
                 self.mounting_angle = 55.6 #angle to ground
                 self.res_x = 640
                 self.res_y = 360
