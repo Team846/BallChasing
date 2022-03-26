@@ -96,9 +96,9 @@ def main():
     global angle, depth
 
     while find_port() == -1: pass
-    camera = VideoStream(find_port()).start()
+    # camera = VideoStream(find_port()).start()
 
-    # vidcap = cv2.VideoCapture('zed2.mov')
+    camera = cv2.VideoCapture(0)
     i = 0
     # output = cv2.VideoWriter('vid.avi', cv2.VideoWriter_fourcc(*'MJPG'), 60, (640, 360), 0)
     # output2 = cv2.VideoWriter('canny.avi', cv2.VideoWriter_fourcc(*'MJPG'), 60, (640, 360), 0)
@@ -108,19 +108,18 @@ def main():
         success, img = camera.read()
         # print(img.shape)
         # img = camera.read()
-        start = time.time()
         try:
             img1, img2, x, y, z, canny = track.ball_tracking(img[0:360, 0:640], img[0:360, 640:], 1)
             # output.write(img2)
             # output2.write(canny)
-        except:
-            pass
-        end = time.time()
-
-        # print("flsdkjf")
-        if camera.available():
-            # img1, img2, matches, x, y = track.ball_tracking(img[0:360, 0:640], img[0:360, 640:], i)
             x = x.to_bytes(4, byteorder='big')
             y = y.to_bytes(4, byteorder='big')
-            UDPServerSocket.sendto((x + y)), (roboRIOIP, roboRIOPort))
+            UDPServerSocket.sendto((x + y), (roboRIOIP, roboRIOPort))
+        except:
+            pass
+
+        # print("flsdkjf")
+        # if camera.available():
+        # img1, img2, matches, x, y = track.ball_tracking(img[0:360, 0:640], img[0:360, 640:], i)
+        
 main()

@@ -51,8 +51,10 @@ class tracking:
                 circles1 = cv2.HoughCircles(image1, cv2.HOUGH_GRADIENT, 2, 40, param1=200, param2=30, minRadius=15, maxRadius=40)
                 circles2 = cv2.HoughCircles(image2, cv2.HOUGH_GRADIENT, 2, 40, param1=200, param2=30, minRadius=15, maxRadius=40)
 
-                matches, x, y, all_circles = self.match(circles1, circles2, height, width)
-
+                try:
+                        matches, x, y, all_circles = self.match(circles1, circles2, height, width)
+                except:
+                        return None
                 img2 = image1
                 for match in all_circles:
                         img2 = cv2.circle(img2, (int(match[0][0]), int(match[0][1])), int(match[0][2]), [100, 100, 100], 10) 
