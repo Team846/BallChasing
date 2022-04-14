@@ -16,6 +16,27 @@ class tracking:
                 self.mounting_angle = 55.6 #angle to ground
                 self.res_x = 640
                 self.res_y = 360
+        def simple_ball_tracking(self, img, camera_x_res, camera_x_fov):
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+                img = cv2.inRange(img, self.colorL, self.colorU)
+                img = cv2.blur(img, (5, 5))
+                img = cv2.inRange(img, 255/(25/3), 255)
+
+                circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 40, param1=200, param2=30, minRadius=15, maxRadius=40)
+
+                circles = np.uint16(np.around(circles))
+
+                closest_circle = [9999, 9999, 9999]
+
+                for circle in circles[0, :]:
+                        x, y, r = circle[0], circle[1], circle[2]
+                        if (y>closest_circle[1]): closest_circle = [x, y, r]
+                largest_contour = []
+                img = cv2.circle(img, (circles[0], circles[1]), circles[2], 100)
+                llpython = [(x-camera_x_res/2) * camera_x_fov]
+
+                return largest_contour, img, llpython
+                        
 
         def ball_tracking(self, image1, image2, index):
 
@@ -27,24 +48,15 @@ class tracking:
                 #         return
 
 
-                cv2.imwrite("m.jpg", image1)
-
                 image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2HSV)
                 image1 = cv2.inRange(image1, self.colorL, self.colorU)
                 image1 = cv2.blur(image1, (5, 5))
                 image1 = cv2.inRange(image1, 255/(25/3), 255)
-                # image1 = cv2.GaussianBlur(image1, (7,7), 0)
-                # image1 = cv2.erode(image1, (6, 6))
-                # image1 = cv2.dilate(image1, (6, 6))
 
-                cv2.imwrite("l.jpg", image1)
                 image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2HSV)
                 image2 = cv2.inRange(image2, self.colorL, self.colorU)
                 image2 = cv2.blur(image1, (5, 5))
                 image2 = cv2.inRange(image1, 255/(25/3), 255)
-                # image1 = cv2.GaussianBlur(image1, (7,7), 0)
-                # image1 = cv2.erode(image1, (6, 6))
-                # canny = cv2.dilate(image1, (6, 6))
                 canny = cv2.Canny(image2, 100, 200)
 
 
