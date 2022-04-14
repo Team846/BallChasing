@@ -16,6 +16,8 @@ def simple_ball_tracking(img, camera_x_res, camera_x_fov):
 
         circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 40, param1=200, param2=30, minRadius=15, maxRadius=40)
 
+        if (circles is None or len(circles) == 0): return [], img, [0, 0] 
+
         circles = np.uint16(np.around(circles))
 
         closest_circle = [9999, 9999, 9999]
